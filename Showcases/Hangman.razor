@@ -1,0 +1,74 @@
+@using CrypticWizard.RandomWordGenerator;
+@using System.Collections.ObjectModel
+@using static CrypticWizard.RandomWordGenerator.WordGenerator;
+
+<div class="align-items-center d-flex flex-column gap-5 h-100 w-100">
+    <h1>Hangman</h1>
+    <h2>@(GameOver ? Winner ? "You Win!" : "Game Over" : "Welcome to Hangman")</h2>
+    <div class="d-flex gap-5 fs-1">
+        @foreach (var letter in Word)
+        {
+            <span>
+                @(GuessedLetters.Contains(letter) ? letter : "_")
+            </span>
+        }
+    </div>
+    @* Hangman visualization *@
+    <div>
+        @foreach (char c in Enumerable.Range('A', 26).Select(i => (char)i))
+        {
+            <Button Class="@GetButtonClass(c)" @onclick="() => GuessLetter(c)">@c</Button>
+        }
+    </div>
+    <Button Class="btn btn-primary w-50" @onclick="StartGame">Restart</Button>
+</div>
+
+@code {
+    int Lives = 5;
+    string Word = "";
+    bool Winner = false;
+    bool GameOver = false;
+    ObservableCollection<char> GuessedLetters = new();
+
+    WordGenerator Words = new();
+
+    protected override void OnInitialized()
+    {
+        StartGame();
+        GuessedLetters.CollectionChanged
+        += (sender, args) => CheckSuccess();
+    }
+
+    void StartGame()
+    {
+        GameOver = false;
+        Word = Words.GetWord(PartOfSpeech.noun).ToUpper();
+        GuessedLetters = new();
+    }
+
+    void GuessLetter(char letter)
+    {
+        if (GuessedLetters.Contains(letter)) return;
+        if (GameOver) return;
+
+        if (!Word.Contains(letter))
+            Lives--;
+
+        GuessedLetters.Add(letter);
+    }
+
+    void CheckSuccess()
+    {
+        @* Check success *@
+    }
+
+    string GetButtonClass(char c)
+    {
+        if (GuessedLetters.Contains(c))
+        {
+            return Word.Contains(c) ? "btn btn-success" : "btn btn-danger";
+        }
+        return "btn btn-outline-primary";
+    }
+}
+}
