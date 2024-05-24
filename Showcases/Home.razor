@@ -1,0 +1,53 @@
+@page "/"
+@using ShowcaseLibrary;
+@using System.Reflection;
+@namespace ShowcaseLibrary.Showcases
+@rendermode InteractiveServer
+
+<div class="d-flex flex-grow-1">
+    <ListGroup class="col-3 d-flex align-items-center">
+        @foreach (var showcase in Showcases ?? new Dictionary<string, Type>())
+        {
+            <ListGroupItem class="w-100">
+                <Button class="w-100" @onclick="() => SelectShowcase(showcase.Value)">@showcase.Key</Button>
+            </ListGroupItem>
+        }
+    </ListGroup>
+    <div class="d-flex flex-grow-1 justify-content-center">
+        @SelectedRenderFragment
+    </div>
+</div>
+
+@code {
+    private RenderFragment? _selectedRenderFragment;
+    public RenderFragment? SelectedRenderFragment
+    {
+        get => _selectedRenderFragment;
+        set
+        {
+            _selectedRenderFragment = value;
+            StateHasChanged();
+        }
+    }
+
+    Dictionary<string, Type>? Showcases { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Showcases = Assembly.GetExecutingAssembly().GetTypes()
+        .Where(t => t.Namespace == "ShowcaseLibrary.Showcases")
+        .Where(t => t.BaseType == typeof(ComponentBase))
+        .Where(t => t.Name != "Home")
+        .ToDictionary(t => t.Name, t => t);
+    }
+
+    void SelectShowcase(Type showcaseType)
+    {
+        SelectedRenderFragment = builder =>
+        {
+            builder.OpenComponent(0, showcaseType);
+            builder.CloseComponent();
+        };
+        Console.WriteLine($"Selected {showcaseType.Name}");
+    }
+}

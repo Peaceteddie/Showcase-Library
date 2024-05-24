@@ -1,0 +1,180 @@
+@using System.Collections.ObjectModel
+
+<div class="d-flex flex-column gap-5">
+    <div class="d-flex justify-content-between">
+        <h2>Tic Tac Toe</h2>
+        <h3>@(GameOver ? $"Game Over, {(X ? "O" : "X")} Wins!" : $"It is {(X ? "X" : "O")}'s turn")</h3>
+    </div>
+    <div class="grid">
+        @foreach (var row in board)
+        {
+            <div class="row">
+                @foreach (var cell in row)
+                {
+                    <div class="col">
+                        <button class="@(cell.WinningCell && GameOver ? "winning-cell" : "")"
+                            @onclick="() => MakeMove(row.Index, cell.Index)">
+                            @cell.Value
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <Button class="btn btn-primary" @onclick="() => Reset()">Reset</Button>
+</div>
+
+
+@code {
+    class Cell
+    {
+        public int Index { get; set; }
+        public string Value { get; set; }
+        public bool WinningCell { get; set; } = false;
+
+        public Cell(int index, string value)
+        {
+            Index = index;
+            Value = value;
+        }
+    }
+    class Row : List<Cell>
+    {
+        public int Index { get; set; }
+    }
+
+
+    bool X = true;
+    bool GameOver = false;
+    List<Row> board;
+
+
+    protected override void OnInitialized()
+    {
+        CreateBoard();
+    }
+
+
+    void CreateBoard()
+    {
+        board = new List<Row>();
+        for (int i = 0; i < 3; i++)
+        {
+            var row = new Row { Index = i };
+            board.Add(row);
+            for (int j = 0; j < 3; j++)
+            {
+                row.Add(new Cell(j, ""));
+            }
+        }
+    }
+    void MakeMove(int row, int col)
+    {
+        board[row][col].Value = X ? "X" : "O";
+        GameOver = CheckSuccess(row, col);
+        X = !X;
+    }
+    bool CheckSuccess(int r, int c)
+    {
+        string value = board[r][c].Value;
+        var directions = new (int dr, int dc)[]
+        {
+(0, 1), // horizontal
+(1, 0), // vertical
+(1, 1), // diagonal \
+(1, -1) // diagonal /
+        };
+
+        foreach (var (dr, dc) in directions)
+        {
+            if (IsWinningLine(r, c, dr, dc, value, out var winningCells))
+            {
+                winningCells!.Add((r, c));
+                HighlightWinningCells(winningCells!);
+                return true;
+            }
+        }
+        return false;
+    }
+    bool IsWinningLine(int r, int c, int dr, int dc, string value, out List<(int r, int c)>? winningCells)
+    {
+        bool IsSame(int r, int c)
+        {
+            try
+            {
+                return board[r][c].Value == value;
+            }
+            catch
+            {
+                return false;
+            }
+        };
+        switch (dr, dc)
+        {
+            case (0, 1):
+                if (IsSame(r, c - 2) && IsSame(r, c - 1))
+                {
+                    winningCells = new List<(int r, int c)> { (r, c - 2), (r, c - 1) };
+                    return true;
+                }
+                break;
+            case (1, 0):
+                if (IsSame(r - 2, c) && IsSame(r - 1, c))
+                {
+                    winningCells = new List<(int r, int c)> { (r - 2, c), (r - 1, c) };
+                    return true;
+                }
+                break;
+            case (1, 1):
+                if (IsSame(r - 2, c - 2) && IsSame(r - 1, c - 1))
+                {
+                    winningCells = new List<(int r, int c)> { (r - 2, c - 2), (r - 1, c - 1) };
+                    return true;
+                }
+                break;
+            case (1, -1):
+                if (IsSame(r - 2, c + 2) && IsSame(r - 1, c + 1))
+                {
+                    winningCells = new List<(int r, int c)> { (r - 2, c + 2), (r - 1, c + 1) };
+                    return true;
+                }
+                break;
+        }
+        winningCells = null;
+        return false;
+    }
+    void HighlightWinningCells(List<(int r, int c)> winningCells)
+    {
+        foreach (var (r, c) in winningCells)
+        {
+            board[r][c].WinningCell = true;
+        }
+    }
+    void Reset()
+    {
+        CreateBoard();
+        GameOver = false;
+        X = true;
+    }
+}
+
+<style>
+    .grid {
+        & div.row {
+            & div.col {
+                margin: 0;
+                padding: 0;
+
+                & button {
+                    border: 1px solid black;
+                    width: 200px;
+                    height: 200px;
+                }
+            }
+        }
+    }
+
+    .winning-cell {
+        background-color: yellow;
+    }
+</style>
