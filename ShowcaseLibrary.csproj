@@ -19,6 +19,7 @@
 		<PackageReference Include="Blazorise" Version="1.5.*" />
 		<PackageReference Include="Blazorise.Bootstrap" Version="1.5.*" />
 		<PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.5.*" />
+		<PackageReference Include="CrypticWizard.RandomWordGenerator" Version="0.9.5" />
 	</ItemGroup>
 
 </Project>

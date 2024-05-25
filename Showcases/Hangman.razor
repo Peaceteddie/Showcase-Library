@@ -1,0 +1,194 @@
+@using CrypticWizard.RandomWordGenerator;
+@using System.Collections.ObjectModel
+@using static CrypticWizard.RandomWordGenerator.WordGenerator;
+
+<div class="align-items-center d-flex flex-column gap-5 h-100 w-100">
+    <h1>Hangman</h1>
+    <h2>@(GameOver ? Winner ? "You Win!" : "Game Over" : "Welcome!")</h2>
+    <div class="d-flex gap-5 fs-1">
+        @foreach (var letter in Word)
+        {
+            <span>
+                @(GuessedLetters.Contains(letter) ? letter : "_")
+            </span>
+        }
+    </div>
+    <div class="d-flex gap-5 justify-content-center">
+        @switch (Lives)
+        {
+            case 5:
+                <div>
+                    _
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    _
+                </div>
+                break;
+            case 4:
+                <div>
+                    👮
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    _
+                </div>
+                break;
+            case 3:
+                <div>
+                    👮
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    👮
+                </div>
+                break;
+            case 2:
+                <div>
+                    👮
+                </div>
+                <div style="transform: scaleX(-1);">
+                    🔫
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    👮
+                </div>
+                break;
+            case 1:
+                <div>
+                    👮
+                </div>
+                <div style="transform: scaleX(-1);">
+                    🔫
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    🔫
+                </div>
+                <div>
+                    👮
+                </div>
+                break;
+            case 0:
+                <div>
+                    👮
+                </div>
+                <div style="transform: scaleX(-1);">
+                    🔫
+                </div>
+                <div>
+                    💀
+                </div>
+                <div>
+                    🔫
+                </div>
+                <div>
+                    👮
+                </div>
+                break;
+            default:
+                break;
+        }
+    </div>
+    <div>
+        @foreach (char c in Enumerable.Range('A', 26).Select(i => (char)i))
+        {
+            <Button Class="@GetButtonClass(c)" @onclick="() => GuessLetter(c)">@c</Button>
+        }
+    </div>
+    <Button Class="btn btn-primary w-50" @onclick="StartGame">Restart</Button>
+</div>
+
+@code {
+    int Lives = 5;
+    string Word = "";
+    bool Winner = false;
+    bool GameOver = false;
+    ObservableCollection<char> GuessedLetters = new();
+
+    WordGenerator Words = new();
+
+    protected override void OnInitialized()
+    {
+        StartGame();
+        GuessedLetters.CollectionChanged
+        += (sender, args) => CheckSuccess();
+    }
+
+    void StartGame()
+    {
+        Lives = 5;
+        Winner = false;
+        GameOver = false;
+        GuessedLetters = new();
+        GuessedLetters.CollectionChanged
+        += (sender, args) => CheckSuccess();
+        Word = Words.GetWord(PartOfSpeech.noun).ToUpper();
+    }
+
+    void GuessLetter(char letter)
+    {
+        if (GuessedLetters.Contains(letter)) return;
+        if (GameOver) return;
+
+        if (!Word.Contains(letter))
+            Lives--;
+
+        GuessedLetters.Add(letter);
+    }
+
+    void CheckSuccess()
+    {
+        if (Lives <= 0)
+        {
+            GameOver = true;
+            Winner = false;
+        }
+        else if (Word.All(c => GuessedLetters.Contains(c)))
+        {
+            GameOver = true;
+            Winner = true;
+        }
+    }
+
+    string GetButtonClass(char c)
+    {
+        if (GuessedLetters.Contains(c))
+        {
+            return Word.Contains(c) ? "btn btn-success" : "btn btn-danger";
+        }
+        return "btn btn-outline-primary";
+    }
+}
