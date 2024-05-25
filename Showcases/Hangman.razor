@@ -4,7 +4,7 @@
 
 <div class="align-items-center d-flex flex-column gap-5 h-100 w-100">
     <h1>Hangman</h1>
-    <h2>@(GameOver ? Winner ? "You Win!" : "Game Over" : "Welcome to Hangman")</h2>
+    <h2>@(GameOver ? Winner ? "You Win!" : "Game Over" : "Welcome!")</h2>
     <div class="d-flex gap-5 fs-1">
         @foreach (var letter in Word)
         {
@@ -13,7 +13,115 @@
             </span>
         }
     </div>
-    @* Hangman visualization *@
+    <div class="d-flex gap-5 justify-content-center">
+        @switch (Lives)
+        {
+            case 5:
+                <div>
+                    _
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    _
+                </div>
+                break;
+            case 4:
+                <div>
+                    👮
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    _
+                </div>
+                break;
+            case 3:
+                <div>
+                    👮
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    👮
+                </div>
+                break;
+            case 2:
+                <div>
+                    👮
+                </div>
+                <div style="transform: scaleX(-1);">
+                    🔫
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    _
+                </div>
+                <div>
+                    👮
+                </div>
+                break;
+            case 1:
+                <div>
+                    👮
+                </div>
+                <div style="transform: scaleX(-1);">
+                    🔫
+                </div>
+                <div>
+                    🦹
+                </div>
+                <div>
+                    🔫
+                </div>
+                <div>
+                    👮
+                </div>
+                break;
+            case 0:
+                <div>
+                    👮
+                </div>
+                <div style="transform: scaleX(-1);">
+                    🔫
+                </div>
+                <div>
+                    💀
+                </div>
+                <div>
+                    🔫
+                </div>
+                <div>
+                    👮
+                </div>
+                break;
+            default:
+                break;
+        }
+    </div>
     <div>
         @foreach (char c in Enumerable.Range('A', 26).Select(i => (char)i))
         {
@@ -41,9 +149,13 @@
 
     void StartGame()
     {
+        Lives = 5;
+        Winner = false;
         GameOver = false;
-        Word = Words.GetWord(PartOfSpeech.noun).ToUpper();
         GuessedLetters = new();
+        GuessedLetters.CollectionChanged
+        += (sender, args) => CheckSuccess();
+        Word = Words.GetWord(PartOfSpeech.noun).ToUpper();
     }
 
     void GuessLetter(char letter)
@@ -59,7 +171,16 @@
 
     void CheckSuccess()
     {
-        @* Check success *@
+        if (Lives <= 0)
+        {
+            GameOver = true;
+            Winner = false;
+        }
+        else if (Word.All(c => GuessedLetters.Contains(c)))
+        {
+            GameOver = true;
+            Winner = true;
+        }
     }
 
     string GetButtonClass(char c)
@@ -70,5 +191,4 @@
         }
         return "btn btn-outline-primary";
     }
-}
 }
