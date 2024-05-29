@@ -46,6 +46,7 @@ partial class Sudoku
         builder.AddAttribute(6, "value", board[row][col]);
         builder.AddAttribute(7, "style", "border: 1px solid black; height: 50px; width: 50px; margin: 0; padding: 0; text-align: center;");
         builder.AddAttribute(8, "oninput", EventCallback.Factory.CreateBinder<int>(this, value => InputChanged(value, row, col), board[row][col]));
+        builder.AddAttribute(9, "name", $"{row}_{col}");
         builder.CloseElement();
     }
 

@@ -39,17 +39,22 @@
         <button class="col-2" @onclick="Solve">Solve</button>
     </div>
     <div class="h-100 w-100">
-        @if (ready)
+        @for (int row = 0; row < Size; row++)
         {
-            @for (int row = 0; row < Size; row++)
+            if (row % (Size == 16 ? 4 : Size == 9 ? 3 : 2) == 0)
             {
-                <div class="d-flex flex-row gap-2 justify-content-center">
-                    @for (int col = 0; col < Size; col++)
-                    {
-                        @RenderCell(row, col)
-                    }
-                </div>
+                <div style="height: 1rem;" />
             }
+            <div class="d-flex flex-row justify-content-center">
+                @for (int col = 0; col < Size; col++)
+                {
+                    if (col % (Size == 16 ? 4 : Size == 9 ? 3 : 2) == 0)
+                    {
+                        <div style="width: 1rem;" />
+                    }
+                    @RenderCell(row, col)
+                }
+            </div>
         }
     </div>
 </span>
