@@ -2,6 +2,7 @@
 @using ShowcaseLibrary;
 @using System.Reflection;
 @using System.Linq;
+@using System.Runtime.CompilerServices
 
 @namespace ShowcaseLibrary.Showcases
 @rendermode InteractiveServer
@@ -37,12 +38,14 @@
     protected override void OnInitialized()
     {
         Showcases = Assembly.GetExecutingAssembly().GetTypes()
-        .Where(t => t.Namespace == "ShowcaseLibrary.Showcases")
-        .Inspect()
-        .Where(t => t.BaseType == typeof(ComponentBase))
-        .Inspect()
-        .Where(t => t.Name != "Home")
-        .Inspect()
+        .Where(t => t.Namespace != null && t.Namespace.StartsWith("ShowcaseLibrary.Showcases"))
+        .Where(t => t.DeclaringType == null)
+        .Where(t => (t.Attributes & TypeAttributes.NestedPublic) == 0)
+        .Where(t => !t.IsDefined(typeof(CompilerGeneratedAttribute), false))
+        .Where(t => !t.IsAbstract)
+        .Where(t => t.IsSubclassOf(typeof(ComponentBase)))
+        .Except(new[] { typeof(Home) })
+        .OrderBy(t => t.Name)
         .ToDictionary(t => t.Name, t => t);
     }
 
