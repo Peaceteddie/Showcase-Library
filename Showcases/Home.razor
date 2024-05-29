@@ -1,6 +1,8 @@
 @page "/"
 @using ShowcaseLibrary;
 @using System.Reflection;
+@using System.Linq;
+
 @namespace ShowcaseLibrary.Showcases
 @rendermode InteractiveServer
 
@@ -36,8 +38,11 @@
     {
         Showcases = Assembly.GetExecutingAssembly().GetTypes()
         .Where(t => t.Namespace == "ShowcaseLibrary.Showcases")
+        .Inspect()
         .Where(t => t.BaseType == typeof(ComponentBase))
+        .Inspect()
         .Where(t => t.Name != "Home")
+        .Inspect()
         .ToDictionary(t => t.Name, t => t);
     }
 
